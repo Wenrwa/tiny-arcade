@@ -1,0 +1,100 @@
+/* Tiny Arcade: page styles. The game itself is drawn in game.js. */
+
+:root {
+  --bg-top: #1a0f3d;
+  --bg-bottom: #05040f;
+  --teal: #3ef0d0;
+  --pink: #ff5fa2;
+  --yellow: #ffd84a;
+  --ink: #e9e6ff;
+  --muted: #a9a3d6;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: radial-gradient(120% 80% at 50% 0%, var(--bg-top), var(--bg-bottom));
+  color: var(--ink);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  display: flex;
+  justify-content: center;
+  /* Stop the page from scrolling or zooming while you play on a phone. */
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+.arcade {
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.marquee { text-align: center; }
+
+.marquee h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--teal);
+  text-shadow: 0 0 8px rgba(62, 240, 208, 0.6), 3px 3px 0 var(--pink);
+}
+
+.marquee p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--yellow);
+}
+
+/* The "screen" bezel around the canvas. */
+.screen {
+  width: 100%;
+  flex: 1;
+  max-height: 720px;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas {
+  display: block;
+  border-radius: 10px;
+  border: 3px solid #2c2166;
+  box-shadow: 0 0 0 3px #0b0820, 0 0 32px rgba(255, 95, 162, 0.25);
+  image-rendering: pixelated;
+  touch-action: none; /* we handle drags ourselves */
+  cursor: pointer;
+}
+
+.help {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.help .key {
+  display: inline-block;
+  min-width: 22px;
+  padding: 1px 5px;
+  margin-right: 3px;
+  border: 1px solid var(--muted);
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+.help .star { color: var(--yellow); }
+.help .rock { color: var(--pink); }
