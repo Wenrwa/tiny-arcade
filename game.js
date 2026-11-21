@@ -175,6 +175,7 @@
     if (LEFT_KEYS.includes(e.key)) keys.left = true;
     if (RIGHT_KEYS.includes(e.key)) keys.right = true;
     if (PAUSE_KEYS.includes(e.key) && !e.repeat) togglePause();
+    if ((e.key === ' ' || e.key === 'Enter') && state.mode === 'start') restart();
     if ((e.key === ' ' || e.key === 'Enter') && state.mode === 'over') restart();
     if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
   });
@@ -192,6 +193,10 @@
 
   canvas.addEventListener('pointerdown', (e) => {
     if (state.paused) return; // taps don't resume; use P, Esc or the pause button
+    if (state.mode === 'start') {
+      restart();
+      return;
+    }
     if (state.mode === 'over') {
       // Ignore taps in the first moment so a frantic dodge doesn't skip the score screen.
       if (state.overTime > 0.6) restart();
@@ -243,7 +248,7 @@
 
   function restart() {
     state = {
-      mode: 'play',      // 'play' or 'over'
+      mode: 'play',      // 'start', 'play' or 'over'
       paused: false,     // freezes the play field; only meaningful in 'play'
       time: 0,
       overTime: 0,
@@ -328,6 +333,8 @@
     state.popups = state.popups.filter((t) => t.life > 0);
     state.flash = Math.max(0, state.flash - dt * 3);
     state.shake = Math.max(0, state.shake - dt * 4);
+
+    if (state.mode === 'start') return; // title screen: nothing moves yet
 
     if (state.mode === 'over') {
       state.overTime += dt;
@@ -488,6 +495,11 @@
 
     ctx.restore();
 
+    if (state.mode === 'start') {
+      drawStart();
+      return;
+    }
+
     drawHud();
     if (state.mode === 'over') drawGameOver();
     if (state.paused) drawPaused();
@@ -499,6 +511,24 @@
       const alpha = i < state.lives ? 1 : 0.2;
       drawSprite(SPRITES.heart, W - 4 - (i + 1) * 9, 4, alpha);
     }
+  }
+
+  function drawStart() {
+    ctx.fillStyle = 'rgba(5, 4, 15, 0.55)';
+    ctx.fillRect(0, 0, W, H);
+
+    text('STAR', W / 2, 52, COLORS.teal, 16, 'center');
+    text('CATCHER', W / 2, 74, COLORS.pink, 16, 'center');
+
+    // Blinks on and off, about twice a second.
+    if (Math.floor(state.time * 2) % 2 === 0) {
+      text('PRESS SPACE OR TAP', W / 2, 140, COLORS.yellow, 7, 'center');
+      text('TO PLAY', W / 2, 151, COLORS.yellow, 7, 'center');
+    }
+
+    text('ARROWS / A D / DRAG  MOVE', W / 2, 186, COLORS.muted, 6, 'center');
+    text('P OR ESC  PAUSE', W / 2, 198, COLORS.muted, 6, 'center');
+    text('CATCH STARS, DODGE ROCKS', W / 2, 210, COLORS.muted, 6, 'center');
   }
 
   function drawPaused() {
@@ -548,6 +578,7 @@
   }
 
   restart();
+  state.mode = 'start'; // wait on the title screen until the player starts
   requestAnimationFrame(frame);
 
   // Expose a tiny read-only peek for debugging in the browser console.

@@ -38,7 +38,7 @@ Sprites are small text grids in `game.js` (`SPRITES`). Each character is one pix
 - [ ] Add a second level with faster rocks
 - [ ] Add power-ups
 - [ ] Add a pause button
-- [ ] Add a start screen with the game title
+- [x] Add a start screen with the game title
 
 ## License
 
