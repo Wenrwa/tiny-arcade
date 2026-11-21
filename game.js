@@ -169,9 +169,12 @@
   const LEFT_KEYS = ['ArrowLeft', 'a', 'A'];
   const RIGHT_KEYS = ['ArrowRight', 'd', 'D'];
 
+  const PAUSE_KEYS = ['p', 'P', 'Escape'];
+
   window.addEventListener('keydown', (e) => {
     if (LEFT_KEYS.includes(e.key)) keys.left = true;
     if (RIGHT_KEYS.includes(e.key)) keys.right = true;
+    if (PAUSE_KEYS.includes(e.key) && !e.repeat) togglePause();
     if ((e.key === ' ' || e.key === 'Enter') && state.mode === 'over') restart();
     if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
   });
@@ -188,6 +191,7 @@
   }
 
   canvas.addEventListener('pointerdown', (e) => {
+    if (state.paused) return; // taps don't resume; use P, Esc or the pause button
     if (state.mode === 'over') {
       // Ignore taps in the first moment so a frantic dodge doesn't skip the score screen.
       if (state.overTime > 0.6) restart();
@@ -202,6 +206,23 @@
   const endDrag = () => { pointerX = null; };
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
+
+  // Pause: a corner button for phones (shown by CSS on touch screens).
+  const pauseButton = document.getElementById('pause');
+  pauseButton.addEventListener('click', () => {
+    togglePause();
+    pauseButton.blur(); // so a later Space press doesn't "click" the button
+  });
+
+  /** Pause or resume the game. Only works while playing, not on game over. */
+  function togglePause() {
+    if (state.mode !== 'play') return;
+    state.paused = !state.paused;
+    pointerX = null;
+    pauseButton.textContent = state.paused ? 'PLAY' : 'PAUSE';
+    pauseButton.setAttribute('aria-label', state.paused ? 'Resume game' : 'Pause game');
+    pauseButton.setAttribute('aria-pressed', String(state.paused));
+  }
 
   // ---------------------------------------------------------------------
   // 5. Game state
@@ -223,6 +244,7 @@
   function restart() {
     state = {
       mode: 'play',      // 'play' or 'over'
+      paused: false,     // freezes the play field; only meaningful in 'play'
       time: 0,
       overTime: 0,
       score: 0,
@@ -468,6 +490,7 @@
 
     drawHud();
     if (state.mode === 'over') drawGameOver();
+    if (state.paused) drawPaused();
   }
 
   function drawHud() {
@@ -476,6 +499,13 @@
       const alpha = i < state.lives ? 1 : 0.2;
       drawSprite(SPRITES.heart, W - 4 - (i + 1) * 9, 4, alpha);
     }
+  }
+
+  function drawPaused() {
+    ctx.fillStyle = 'rgba(5, 4, 15, 0.5)';
+    ctx.fillRect(0, 0, W, H);
+    text('PAUSED', W / 2, H / 2 - 10, COLORS.yellow, 12, 'center');
+    text('P OR ESC TO RESUME', W / 2, H / 2 + 8, COLORS.muted, 6, 'center');
   }
 
   function drawGameOver() {
@@ -512,7 +542,7 @@
     // Clamp the time step so a backgrounded tab doesn't teleport everything.
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    update(dt);
+    if (!state.paused) update(dt); // while paused, the world stands still
     draw();
     requestAnimationFrame(frame);
   }
