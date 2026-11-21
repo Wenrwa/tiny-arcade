@@ -121,3 +121,13 @@ canvas {
 
 .help .star { color: var(--yellow); }
 .help .rock { color: var(--pink); }
+
+.footer {
+  margin: auto 0 0;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.footer .version { color: var(--yellow); }
