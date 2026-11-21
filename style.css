@@ -60,6 +60,7 @@ body {
 
 /* The "screen" bezel around the canvas. */
 .screen {
+  position: relative;
   width: 100%;
   flex: 1;
   max-height: 720px;
@@ -67,6 +68,28 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* On-screen pause button, for phones and other touch screens only. */
+.pause-button {
+  display: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  font: bold 11px ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  letter-spacing: 1px;
+  color: var(--ink);
+  background: rgba(20, 12, 51, 0.85);
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  touch-action: manipulation;
+}
+
+.pause-button:active { background: #2c2166; }
+
+@media (pointer: coarse) {
+  .pause-button { display: block; }
 }
 
 canvas {
