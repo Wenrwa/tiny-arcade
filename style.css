@@ -88,6 +88,22 @@ body {
 
 .pause-button:active { background: #2c2166; }
 
+/* Sound on/off toggle, shown under the screen. */
+.mute-button {
+  padding: 4px 10px;
+  font: bold 11px ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  letter-spacing: 1px;
+  color: var(--ink);
+  background: rgba(20, 12, 51, 0.85);
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mute-button:active { background: #2c2166; }
+.mute-button[aria-pressed="true"] { color: var(--muted); }
+
 @media (pointer: coarse) {
   .pause-button { display: block; }
 }
