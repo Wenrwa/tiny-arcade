@@ -241,6 +241,27 @@
 
   let state;
 
+  // The best score is kept in localStorage so it survives page reloads.
+  // Storage can be unavailable (private mode, blocked cookies), so fall back to 0.
+  const BEST_KEY = 'starCatcher.bestScore';
+
+  function loadBestScore() {
+    try {
+      const n = parseInt(window.localStorage.getItem(BEST_KEY), 10);
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function saveBestScore(n) {
+    try {
+      window.localStorage.setItem(BEST_KEY, String(n));
+    } catch (e) {
+      // Ignore: the score still works for this session.
+    }
+  }
+
   function restart() {
     state = {
       mode: 'play',      // 'play' or 'over'
@@ -248,7 +269,7 @@
       time: 0,
       overTime: 0,
       score: 0,
-      best: state ? state.best : 0,
+      best: state ? state.best : loadBestScore(),
       lives: SETTINGS.lives,
       shipX: (W - SHIP.w) / 2,
       tilt: 0,           // -1..1, used to lean the ship's exhaust
@@ -386,7 +407,10 @@
   function gameOver() {
     state.mode = 'over';
     state.overTime = 0;
-    state.best = Math.max(state.best, state.score);
+    if (state.score > state.best) {
+      state.best = state.score;
+      saveBestScore(state.best);
+    }
     burst(state.shipX + SHIP.w / 2, SHIP_Y + SHIP.h / 2,
       [COLORS.teal, COLORS.pink, COLORS.yellow, COLORS.white], 40, 90);
   }
