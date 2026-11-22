@@ -3,6 +3,7 @@
  *
  * Steer a little ship along the bottom of the screen. Catch the falling
  * stars for points and dodge the rocks. Three hits and it's game over.
+ * Rare shield stars give a shield that blocks one rock hit.
  *
  * Everything is drawn on one <canvas>. There are no images or libraries:
  * sprites are small text grids (see SPRITES) painted one "pixel" at a time.
@@ -36,6 +37,7 @@
     spawnEvery: 0.75,      // seconds between falling things, at the start
     minSpawnEvery: 0.28,   // fastest spawn rate as the game speeds up
     rockChance: 0.4,       // share of falling things that are rocks
+    shieldChance: 0.05,    // share of non-rock things that are rare shield stars
     fallSpeed: [38, 62],   // min/max fall speed at the start
     speedUpPerPoint: 0.15, // extra fall speed for each point scored
   };
@@ -100,6 +102,18 @@
         'drrrrdrd',
         '.ddrrdd.',
         '..dddd..',
+      ],
+    },
+    shield: {
+      palette: { t: COLORS.teal, d: COLORS.tealDark, w: COLORS.white },
+      rows: [
+        '...w...',
+        '..ttt..',
+        'wttwttw',
+        '.ttwtt.',
+        '..tdt..',
+        '...d...',
+        '.......',
       ],
     },
     heart: {
@@ -350,6 +364,7 @@
       flash: 0,          // red screen flash after a hit
       shake: 0,          // screen shake after a hit
       invincible: 0,     // brief safety window after a hit
+      shield: false,     // true after catching a shield star; blocks one rock
     };
   }
 
@@ -361,11 +376,13 @@
 
   function spawnFalling() {
     const isRock = Math.random() < SETTINGS.rockChance;
-    const sprite = isRock ? SPRITES.rock : SPRITES.star;
+    const isShield = !isRock && Math.random() < SETTINGS.shieldChance;
+    const kind = isRock ? 'rock' : isShield ? 'shield' : 'star';
+    const sprite = isRock ? SPRITES.rock : isShield ? SPRITES.shield : SPRITES.star;
     const size = spriteSize(sprite);
     const boost = state.score * SETTINGS.speedUpPerPoint;
     state.falling.push({
-      kind: isRock ? 'rock' : 'star',
+      kind,
       sprite,
       x: rand(2, W - size.w - 2),
       y: -size.h,
@@ -462,6 +479,17 @@
         burst(cx, cy, [COLORS.yellow, COLORS.white, COLORS.teal], 12, 60);
         state.popups.push({ x: cx, y: cy, text: '+' + SETTINGS.starPoints, life: 0.8 });
         playStarSound();
+      } else if (f.kind === 'shield') {
+        f.dead = true;
+        state.shield = true;
+        burst(cx, cy, [COLORS.teal, COLORS.white, COLORS.tealDark], 14, 60);
+        state.popups.push({ x: cx, y: cy, text: 'SHIELD', life: 0.8 });
+      } else if (state.shield) {
+        // The shield soaks up this rock: no damage, the rock shatters.
+        f.dead = true;
+        state.shield = false;
+        state.shake = 0.5;
+        burst(cx, cy, [COLORS.teal, COLORS.white, COLORS.rockLight], 16, 70);
       } else if (state.invincible <= 0) {
         f.dead = true;
         state.lives -= 1;
@@ -551,6 +579,7 @@
     // The ship blinks while it is briefly invincible after a hit.
     if (state.mode === 'play') {
       const blink = state.invincible > 0 && Math.floor(state.time * 12) % 2 === 0;
+      if (state.shield) drawShieldGlow();
       if (!blink) {
         drawSprite(SPRITES.ship, state.shipX, SHIP_Y);
         // Flickering exhaust under the ship, leaning against the direction of travel.
@@ -589,8 +618,29 @@
     if (state.paused) drawPaused();
   }
 
+  /** A pulsing teal halo around the ship while a shield is active. */
+  function drawShieldGlow() {
+    const cx = state.shipX + SHIP.w / 2;
+    const cy = SHIP_Y + SHIP.h / 2;
+    const pulse = 0.5 + 0.5 * Math.sin(state.time * 8);
+    ctx.save();
+    ctx.globalAlpha = 0.2 + 0.15 * pulse;
+    ctx.fillStyle = COLORS.teal;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 9 + pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.6 + 0.3 * pulse;
+    ctx.strokeStyle = COLORS.teal;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function drawHud() {
     text('SCORE ' + state.score, 4, 4, COLORS.teal, 7);
+    if (state.shield) text('SHIELD', 4, 14, COLORS.teal, 6);
     for (let i = 0; i < SETTINGS.lives; i++) {
       const alpha = i < state.lives ? 1 : 0.2;
       drawSprite(SPRITES.heart, W - 4 - (i + 1) * 9, 4, alpha);
