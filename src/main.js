@@ -4,15 +4,17 @@
 // stars for points and dodge the rocks. Three hits and it's game over.
 // Rare shield stars give a shield that blocks one rock hit.
 //
-// Everything is drawn on one <canvas>. There are no images or libraries.
+// Screens (start menu, play, game over) are scenes in src/scenes/, run by a
+// tiny scene manager. Everything is drawn on one <canvas>. No images or libraries.
 import { resize, ctx } from './engine/canvas.js';
-import { update } from './engine/world.js';
-import { draw } from './engine/render.js';
 import { game } from './state.js';
-import { restart } from './actions.js';
 import { loadLevels } from './levels/loader.js';
 import { text } from './ui/text.js';
 import { W, H, COLORS } from './config.js';
+import { register, go, update, draw } from './scenes/manager.js';
+import { startScene } from './scenes/start.js';
+import { playScene } from './scenes/play.js';
+import { overScene } from './scenes/over.js';
 import './input/keyboard.js';
 import './input/touch.js';
 
@@ -31,16 +33,20 @@ function frame(now) {
   // Clamp the time step so a backgrounded tab doesn't teleport everything.
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
-  if (!game.state.paused) update(dt); // while paused, the world stands still
+  update(dt);
   draw();
   requestAnimationFrame(frame);
 }
 
-// Load the level files first, then start. If they fail, say so on the canvas.
+register('start', startScene);
+register('play', playScene);
+register('over', overScene);
+
+// Load the level files first, then show the title screen. If they fail, say so on the canvas.
 loadLevels()
   .then((levels) => {
     game.levels = levels;
-    restart();
+    go('start');
     requestAnimationFrame(frame);
   })
   .catch((err) => {

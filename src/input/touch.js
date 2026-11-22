@@ -1,41 +1,42 @@
-// Touch and mouse input: drag to steer, tap to restart after game over,
-// plus the on-screen PAUSE and SOUND buttons.
-import { W } from '../config.js';
+// Touch and mouse input: converts pointer events to logical coordinates and
+// hands them to the active scene. Also wires the on-screen PAUSE and SOUND buttons.
+import { W, H } from '../config.js';
 import { canvas } from '../engine/canvas.js';
-import { input, game } from '../state.js';
 import { ensureAudio, toggleMute } from '../audio/sound.js';
-import { restart, togglePause } from '../actions.js';
+import { togglePause } from '../actions.js';
+import { currentName, onPointer } from '../scenes/manager.js';
 
-/** Convert a pointer event to a logical x coordinate. */
-function toLogicalX(e) {
+/** Convert a pointer event to logical (x, y) pixels. */
+function toLogical(e) {
   const rect = canvas.getBoundingClientRect();
-  return ((e.clientX - rect.left) / rect.width) * W;
+  return {
+    x: ((e.clientX - rect.left) / rect.width) * W,
+    y: ((e.clientY - rect.top) / rect.height) * H,
+  };
 }
 
 canvas.addEventListener('pointerdown', (e) => {
   ensureAudio(); // first tap unlocks audio
-  const state = game.state;
-  if (!state || state.paused) return; // not loaded yet, or paused: taps don't resume
-  if (state.mode === 'over') {
-    // Ignore taps in the first moment so a frantic dodge doesn't skip the score screen.
-    if (state.overTime > 0.6) restart();
-    return;
-  }
   canvas.setPointerCapture(e.pointerId);
-  input.pointerX = toLogicalX(e);
+  const p = toLogical(e);
+  onPointer('down', p.x, p.y);
 });
 
 canvas.addEventListener('pointermove', (e) => {
-  if (input.pointerX !== null) input.pointerX = toLogicalX(e);
+  const p = toLogical(e);
+  onPointer('move', p.x, p.y);
 });
 
-const endDrag = () => { input.pointerX = null; };
+const endDrag = (e) => {
+  const p = toLogical(e);
+  onPointer('up', p.x, p.y);
+};
 canvas.addEventListener('pointerup', endDrag);
 canvas.addEventListener('pointercancel', endDrag);
 
 const pauseButton = document.getElementById('pause');
 pauseButton.addEventListener('click', () => {
-  togglePause();
+  if (currentName() === 'play') togglePause();
   pauseButton.blur(); // so a later Space press doesn't "click" the button
 });
 

@@ -24,6 +24,8 @@ There's no build step and there are no dependencies. Either:
 | `src/config.js` | Settings and palette |
 | `src/state.js` | Shared game state and input flags |
 | `src/actions.js` | Restart and pause |
+| `src/scenes/` | Screens: `manager.js` (one active scene at a time), `start.js` (title and menu), `play.js`, `over.js` (game over) |
+| `src/ui/menu.js` | Start-screen menu items, drawing and tap hit-testing |
 | `src/engine/` | Loop logic (`world.js`), drawing (`render.js`), canvas sizing, collision, rng |
 | `src/input/` | Keyboard and touch/mouse input |
 | `src/audio/` | Sound effects (WebAudio) |
@@ -47,7 +49,7 @@ Sprites are small text grids in `src/entities/sprites.js` (`SPRITES`). Each char
 - [ ] Add a second level with faster rocks
 - [ ] Add power-ups
 - [ ] Add a pause button
-- [ ] Add a start screen with the game title
+- [x] Add a start screen with the game title
 
 ## License
 
