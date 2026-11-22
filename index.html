@@ -23,10 +23,16 @@
       <button id="pause" class="pause-button" type="button" aria-label="Pause game" aria-pressed="false">PAUSE</button>
     </div>
 
+    <!-- Sound toggle. Press M to flip it from the keyboard too. -->
+    <button id="mute" class="mute-button" type="button" aria-label="Mute sound effects" aria-pressed="false">SOUND ON</button>
+
     <p class="help">
       <span class="key">&larr;</span><span class="key">&rarr;</span> or drag to move &middot;
-      catch <b class="star">stars</b>, dodge <b class="rock">rocks</b>
+      catch <b class="star">stars</b>, dodge <b class="rock">rocks</b> &middot;
+      <span class="key">M</span> sound
     </p>
+
+    <footer class="footer">Star Catcher <span class="version">v0.1.0</span></footer>
   </main>
 
   <script src="game.js"></script>

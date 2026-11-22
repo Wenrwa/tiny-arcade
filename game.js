@@ -186,9 +186,11 @@
   const PAUSE_KEYS = ['p', 'P', 'Escape'];
 
   window.addEventListener('keydown', (e) => {
+    ensureAudio(); // first key press unlocks audio (browsers need a user gesture)
     if (LEFT_KEYS.includes(e.key)) keys.left = true;
     if (RIGHT_KEYS.includes(e.key)) keys.right = true;
     if (PAUSE_KEYS.includes(e.key) && !e.repeat) togglePause();
+    if ((e.key === 'm' || e.key === 'M') && !e.repeat) toggleMute();
     if ((e.key === ' ' || e.key === 'Enter') && state.mode === 'over') restart();
     if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
   });
@@ -205,6 +207,7 @@
   }
 
   canvas.addEventListener('pointerdown', (e) => {
+    ensureAudio(); // first tap unlocks audio
     if (state.paused) return; // taps don't resume; use P, Esc or the pause button
     if (state.mode === 'over') {
       // Ignore taps in the first moment so a frantic dodge doesn't skip the score screen.
@@ -239,6 +242,73 @@
   }
 
   // ---------------------------------------------------------------------
+  // 4b. Sound effects (WebAudio, no sound files)
+  // ---------------------------------------------------------------------
+
+  // The AudioContext is created lazily, on the first user gesture, because
+  // browsers block audio that starts before the player has interacted.
+  let audioCtx = null;
+  let muted = false;
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null; // no WebAudio: the game simply stays silent
+      audioCtx = new AC();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  /** Play one short synth tone that optionally glides from freq to slideTo. */
+  function beep(freq, slideTo, duration, type, volume) {
+    if (muted) return;
+    const ac = ensureAudio();
+    if (!ac || ac.state !== 'running') return;
+    const t = ac.currentTime;
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + duration);
+    gain.gain.setValueAtTime(volume, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.start(t);
+    osc.stop(t + duration + 0.02);
+  }
+
+  /** A bright rising "ding" when a star is caught. */
+  function playStarSound() {
+    beep(880, 1320, 0.09, 'square', 0.06);
+  }
+
+  /** A low falling buzz when a rock hits the ship. */
+  function playHitSound() {
+    beep(220, 90, 0.22, 'sawtooth', 0.08);
+  }
+
+  function setMuted(value) {
+    muted = value;
+    const button = document.getElementById('mute');
+    button.textContent = muted ? 'SOUND OFF' : 'SOUND ON';
+    button.setAttribute('aria-label', muted ? 'Unmute sound effects' : 'Mute sound effects');
+    button.setAttribute('aria-pressed', String(muted));
+  }
+
+  function toggleMute() {
+    ensureAudio();
+    setMuted(!muted);
+  }
+
+  const muteButton = document.getElementById('mute');
+  muteButton.addEventListener('click', () => {
+    toggleMute();
+    muteButton.blur(); // so a later Space press doesn't "click" the button
+  });
+
+  // ---------------------------------------------------------------------
   // 5. Game state
   // ---------------------------------------------------------------------
 
@@ -255,6 +325,27 @@
 
   let state;
 
+  // The best score is kept in localStorage so it survives page reloads.
+  // Storage can be unavailable (private mode, blocked cookies), so fall back to 0.
+  const BEST_KEY = 'starCatcher.bestScore';
+
+  function loadBestScore() {
+    try {
+      const n = parseInt(window.localStorage.getItem(BEST_KEY), 10);
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function saveBestScore(n) {
+    try {
+      window.localStorage.setItem(BEST_KEY, String(n));
+    } catch (e) {
+      // Ignore: the score still works for this session.
+    }
+  }
+
   function restart() {
     state = {
       mode: 'play',      // 'play' or 'over'
@@ -262,7 +353,7 @@
       time: 0,
       overTime: 0,
       score: 0,
-      best: state ? state.best : 0,
+      best: state ? state.best : loadBestScore(),
       lives: SETTINGS.lives,
       shipX: (W - SHIP.w) / 2,
       tilt: 0,           // -1..1, used to lean the ship's exhaust
@@ -387,6 +478,7 @@
         state.score += SETTINGS.starPoints;
         burst(cx, cy, [COLORS.yellow, COLORS.white, COLORS.teal], 12, 60);
         state.popups.push({ x: cx, y: cy, text: '+' + SETTINGS.starPoints, life: 0.8 });
+        playStarSound();
       } else if (f.kind === 'shield') {
         f.dead = true;
         state.shield = true;
@@ -405,6 +497,7 @@
         state.flash = 1;
         state.shake = 1;
         burst(cx, cy, [COLORS.rock, COLORS.rockLight, COLORS.pink], 16, 70);
+        playHitSound();
         if (state.lives <= 0) gameOver();
       }
     }
@@ -414,7 +507,10 @@
   function gameOver() {
     state.mode = 'over';
     state.overTime = 0;
-    state.best = Math.max(state.best, state.score);
+    if (state.score > state.best) {
+      state.best = state.score;
+      saveBestScore(state.best);
+    }
     burst(state.shipX + SHIP.w / 2, SHIP_Y + SHIP.h / 2,
       [COLORS.teal, COLORS.pink, COLORS.yellow, COLORS.white], 40, 90);
   }
