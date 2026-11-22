@@ -5,15 +5,25 @@
 // Rare shield stars give a shield that blocks one rock hit.
 //
 // Everything is drawn on one <canvas>. There are no images or libraries.
-import { resize } from './engine/canvas.js';
+import { resize, ctx } from './engine/canvas.js';
 import { update } from './engine/world.js';
 import { draw } from './engine/render.js';
 import { game } from './state.js';
 import { restart } from './actions.js';
+import { loadLevels } from './levels/loader.js';
+import { text } from './ui/text.js';
+import { W, H, COLORS } from './config.js';
 import './input/keyboard.js';
 import './input/touch.js';
 
 resize();
+
+function showLoadError(err) {
+  ctx.fillStyle = COLORS.skyBottom;
+  ctx.fillRect(0, 0, W, H);
+  text('LEVELS FAILED', W / 2, H / 2 - 10, COLORS.pink, 10, 'center');
+  text(String(err.message).slice(0, 40), W / 2, H / 2 + 6, COLORS.muted, 6, 'center');
+}
 
 let last = performance.now();
 
@@ -26,8 +36,17 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-restart();
-requestAnimationFrame(frame);
+// Load the level files first, then start. If they fail, say so on the canvas.
+loadLevels()
+  .then((levels) => {
+    game.levels = levels;
+    restart();
+    requestAnimationFrame(frame);
+  })
+  .catch((err) => {
+    console.error(err);
+    showLoadError(err);
+  });
 
 // Expose a tiny read-only peek for debugging in the browser console.
 window.starCatcher = { get state() { return game.state; } };

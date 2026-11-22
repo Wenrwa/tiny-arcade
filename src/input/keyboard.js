@@ -13,7 +13,7 @@ window.addEventListener('keydown', (e) => {
   if (RIGHT_KEYS.includes(e.key)) input.keys.right = true;
   if (PAUSE_KEYS.includes(e.key) && !e.repeat) togglePause();
   if ((e.key === 'm' || e.key === 'M') && !e.repeat) toggleMute();
-  if ((e.key === ' ' || e.key === 'Enter') && game.state.mode === 'over') restart();
+  if ((e.key === ' ' || e.key === 'Enter') && game.state?.mode === 'over') restart();
   if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
 });
 

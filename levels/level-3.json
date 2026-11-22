@@ -1,0 +1,8 @@
+{
+  "name": "Asteroid Belt",
+  "nextScore": null,
+  "fallSpeed": [70, 100],
+  "spawnEvery": 0.45,
+  "minSpawnEvery": 0.28,
+  "kinds": { "star": 0.4, "rock": 0.56, "shield": 0.04 }
+}

@@ -8,6 +8,7 @@ import { drawShieldGlow } from '../entities/shield.js';
 import { backdrop } from '../entities/backdrop.js';
 import { text } from '../ui/text.js';
 import { drawHud, drawGameOver, drawPaused } from '../ui/hud.js';
+import { drawLevelBanner } from '../ui/banner.js';
 import { game } from '../state.js';
 
 // Build the sky gradient once; it never changes.
@@ -97,6 +98,7 @@ export function draw() {
 
   ctx.restore();
 
+  drawLevelBanner(state);
   drawHud();
   if (state.mode === 'over') drawGameOver();
   if (state.paused) drawPaused();

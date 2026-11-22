@@ -1,17 +1,19 @@
-// Falling things: stars, rocks and shield stars.
-import { SETTINGS, W } from '../config.js';
+// Falling things: stars, rocks and shield stars. Kinds and speed come from the current level.
+import { W } from '../config.js';
 import { SPRITES, spriteSize } from './sprites.js';
 import { rand } from '../engine/rng.js';
 import { game } from '../state.js';
+import { currentLevel } from '../levels/progress.js';
+import { pickKind, pickFallSpeed } from '../levels/spawner.js';
+
+const SPRITE_FOR = { rock: SPRITES.rock, shield: SPRITES.shield, star: SPRITES.star };
 
 export function spawnFalling() {
   const state = game.state;
-  const isRock = Math.random() < SETTINGS.rockChance;
-  const isShield = !isRock && Math.random() < SETTINGS.shieldChance;
-  const kind = isRock ? 'rock' : isShield ? 'shield' : 'star';
-  const sprite = isRock ? SPRITES.rock : isShield ? SPRITES.shield : SPRITES.star;
+  const level = currentLevel(state);
+  const kind = pickKind(level.kinds);
+  const sprite = SPRITE_FOR[kind];
   const size = spriteSize(sprite);
-  const boost = state.score * SETTINGS.speedUpPerPoint;
   state.falling.push({
     kind,
     sprite,
@@ -19,7 +21,7 @@ export function spawnFalling() {
     y: -size.h,
     w: size.w,
     h: size.h,
-    vy: rand(SETTINGS.fallSpeed[0], SETTINGS.fallSpeed[1]) + boost,
+    vy: pickFallSpeed(level),
     wobble: Math.random() * Math.PI * 2,
   });
 }
