@@ -6,5 +6,6 @@ export const input = {
 };
 
 export const game = {
-  state: null, // set by restart()
+  levels: null, // loaded from levels/*.json by main.js before the first restart()
+  state: null,  // set by restart()
 };

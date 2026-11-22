@@ -1,0 +1,8 @@
+{
+  "name": "Meteor Shower",
+  "nextScore": 250,
+  "fallSpeed": [52, 80],
+  "spawnEvery": 0.6,
+  "minSpawnEvery": 0.4,
+  "kinds": { "star": 0.45, "rock": 0.5, "shield": 0.05 }
+}

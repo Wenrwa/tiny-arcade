@@ -15,7 +15,7 @@ function toLogicalX(e) {
 canvas.addEventListener('pointerdown', (e) => {
   ensureAudio(); // first tap unlocks audio
   const state = game.state;
-  if (state.paused) return; // taps don't resume; use P, Esc or the pause button
+  if (!state || state.paused) return; // not loaded yet, or paused: taps don't resume
   if (state.mode === 'over') {
     // Ignore taps in the first moment so a frantic dodge doesn't skip the score screen.
     if (state.overTime > 0.6) restart();

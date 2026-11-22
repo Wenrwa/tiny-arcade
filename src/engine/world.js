@@ -8,6 +8,8 @@ import { overlaps } from './collision.js';
 import { input, game } from '../state.js';
 import { saveBestScore } from '../storage/best.js';
 import { playStarSound, playHitSound } from '../audio/sound.js';
+import { currentLevel, advanceLevel } from '../levels/progress.js';
+import { nextSpawnDelay } from '../levels/spawner.js';
 
 /** Advance particles, popups and flashes. Runs even on the game-over screen. */
 function animate(state, dt) {
@@ -22,6 +24,7 @@ function animate(state, dt) {
   state.popups = state.popups.filter((t) => t.life > 0);
   state.flash = Math.max(0, state.flash - dt * 3);
   state.shake = Math.max(0, state.shake - dt * 4);
+  state.levelBanner = Math.max(0, state.levelBanner - dt);
 }
 
 /** Work out the ship's horizontal velocity direction (-1..1) from keys or drag. */
@@ -49,8 +52,7 @@ function spawn(state, dt) {
   state.spawnTimer -= dt;
   if (state.spawnTimer <= 0) {
     spawnFalling();
-    const every = SETTINGS.spawnEvery - state.score * 0.002;
-    state.spawnTimer = Math.max(SETTINGS.minSpawnEvery, every);
+    state.spawnTimer = nextSpawnDelay(currentLevel(state));
   }
 }
 
@@ -129,4 +131,5 @@ export function update(dt) {
   moveShip(state, dt);
   spawn(state, dt);
   moveFalling(state, dt);
+  advanceLevel(state, state.levels);
 }

@@ -3,6 +3,7 @@ import { SETTINGS } from './config.js';
 import { startX } from './entities/player.js';
 import { input, game } from './state.js';
 import { loadBestScore } from './storage/best.js';
+import { BANNER_TIME } from './levels/progress.js';
 
 const pauseButton = document.getElementById('pause');
 
@@ -20,6 +21,9 @@ export function restart() {
     shipX: startX(),
     tilt: 0,           // -1..1, used to lean the ship's exhaust
     spawnTimer: 0.4,
+    levels: game.levels, // loaded level settings (see src/levels/loader.js)
+    levelIndex: 0,       // which level is active
+    levelBanner: BANNER_TIME, // seconds left on the "LEVEL N" banner (0 = hidden)
     falling: [],       // stars and rocks
     particles: [],     // sparkles and debris
     popups: [],        // floating "+10" labels
@@ -33,7 +37,7 @@ export function restart() {
 /** Pause or resume the game. Only works while playing, not on game over. */
 export function togglePause() {
   const state = game.state;
-  if (state.mode !== 'play') return;
+  if (!state || state.mode !== 'play') return;
   state.paused = !state.paused;
   input.pointerX = null;
   pauseButton.textContent = state.paused ? 'PLAY' : 'PAUSE';

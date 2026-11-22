@@ -1,0 +1,8 @@
+{
+  "name": "Stargazing",
+  "nextScore": 100,
+  "fallSpeed": [38, 62],
+  "spawnEvery": 0.75,
+  "minSpawnEvery": 0.6,
+  "kinds": { "star": 0.55, "rock": 0.4, "shield": 0.05 }
+}
