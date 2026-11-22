@@ -20,9 +20,18 @@ There's no build step and there are no dependencies. Either:
 | --- | --- |
 | `index.html` | The page, which holds one `<canvas>` |
 | `style.css` | Page layout and the arcade look around the canvas |
-| `game.js` | The whole game: settings, sprites, input, logic and drawing, in numbered sections |
+| `src/main.js` | Entry point: wires the modules together and runs the loop |
+| `src/config.js` | Settings and palette |
+| `src/state.js` | Shared game state and input flags |
+| `src/actions.js` | Restart and pause |
+| `src/engine/` | Loop logic (`world.js`), drawing (`render.js`), canvas sizing, collision, rng |
+| `src/input/` | Keyboard and touch/mouse input |
+| `src/audio/` | Sound effects (WebAudio) |
+| `src/entities/` | Player, falling stars and rocks, shield, particles, backdrop, sprites |
+| `src/ui/` | HUD, text, footer version |
+| `src/storage/` | Best score in localStorage |
 
-Sprites are small text grids in `game.js` (`SPRITES`). Each character is one pixel, so you can draw new art in a text editor.
+Sprites are small text grids in `src/entities/sprites.js` (`SPRITES`). Each character is one pixel, so you can draw new art in a text editor.
 
 ## Contribute
 
