@@ -6,7 +6,8 @@
 //   update(dt)     advance the scene by dt seconds
 //   draw()         paint one frame
 //   onKey(e)       keydown event
-//   onPointer(kind, x, y)  kind is 'down', 'move' or 'up'; x, y are logical pixels
+//   onPointer(kind, x, y, type)  kind is 'down', 'move' or 'up'; x, y are logical pixels;
+//                                 type is the pointer type: 'touch', 'mouse' or 'pen'
 const scenes = {};
 let active = null;
 let activeName = null;
@@ -43,8 +44,8 @@ export function onKey(e) {
   if (active && active.onKey) active.onKey(e);
 }
 
-export function onPointer(kind, x, y) {
-  if (active && active.onPointer) active.onPointer(kind, x, y);
+export function onPointer(kind, x, y, type) {
+  if (active && active.onPointer) active.onPointer(kind, x, y, type);
 }
 
 /** Name-free access to the active scene, mainly for tests and debugging. */

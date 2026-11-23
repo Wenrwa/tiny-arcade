@@ -17,6 +17,7 @@ import { playScene } from './scenes/play.js';
 import { overScene } from './scenes/over.js';
 import './input/keyboard.js';
 import './input/touch.js';
+import './ui/touch-controls.js';
 
 resize();
 
