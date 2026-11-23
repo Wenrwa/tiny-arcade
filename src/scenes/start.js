@@ -56,12 +56,15 @@ export const startScene = {
     }
   },
 
-  onPointer(kind, x, y) {
+  onPointer(kind, x, y, type) {
     if (kind !== 'down') return;
     const index = menuIndexAt(x, y);
     if (index >= 0) {
       selected = index;
       choose(index);
+    } else if (type === 'touch') {
+      // On a phone, a tap anywhere else on the screen starts the game.
+      choose(0);
     }
   },
 };

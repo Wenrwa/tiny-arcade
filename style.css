@@ -70,23 +70,33 @@ body {
   justify-content: center;
 }
 
-/* On-screen pause button, for phones and other touch screens only. */
-.pause-button {
+/* On-screen touch controls under the canvas: LEFT, PAUSE, RIGHT. Phones and tablets only. */
+.touch-controls {
   display: none;
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 4px 8px;
-  font: bold 11px ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  letter-spacing: 1px;
+  width: 100%;
+  max-width: 390px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.touch-button {
+  flex: 1;
+  min-height: 48px;
+  font: bold 16px ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   color: var(--ink);
   background: rgba(20, 12, 51, 0.85);
   border: 1px solid var(--muted);
-  border-radius: 6px;
-  touch-action: manipulation;
+  border-radius: 8px;
+  touch-action: none; /* taps and holds go to the game, not the page */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
-.pause-button:active { background: #2c2166; }
+.touch-button:active { background: #2c2166; }
+
+.touch-button.pause-button { flex: 0 0 96px; font-size: 13px; letter-spacing: 1px; }
 
 /* Sound on/off toggle, shown under the screen. */
 .mute-button {
@@ -104,8 +114,11 @@ body {
 .mute-button:active { background: #2c2166; }
 .mute-button[aria-pressed="true"] { color: var(--muted); }
 
+/* Touch screens: show the on-screen controls and let the canvas use the full phone width. */
 @media (pointer: coarse) {
-  .pause-button { display: block; }
+  .touch-controls { display: flex; }
+  .arcade { padding: 8px; gap: 8px; }
+  .screen { max-height: none; }
 }
 
 canvas {

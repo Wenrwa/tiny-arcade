@@ -19,8 +19,14 @@
     <!-- The whole game is drawn on this one canvas (see src/main.js). -->
     <div class="screen">
       <canvas id="game" aria-label="Star Catcher game. Use the arrow keys or touch to move."></canvas>
-      <!-- Shown only on touch screens (see style.css). P or Esc pauses on desktop. -->
-      <button id="pause" class="pause-button" type="button" aria-label="Pause game" aria-pressed="false">PAUSE</button>
+    </div>
+
+    <!-- On-screen controls, shown only on touch screens (see style.css and src/ui/touch-controls.js).
+         P or Esc pauses on desktop. -->
+    <div class="touch-controls" aria-label="Touch controls">
+      <button id="left" class="touch-button" type="button" aria-label="Move left">&larr;</button>
+      <button id="pause" class="touch-button pause-button" type="button" aria-label="Pause game" aria-pressed="false">PAUSE</button>
+      <button id="right" class="touch-button" type="button" aria-label="Move right">&rarr;</button>
     </div>
 
     <!-- Sound toggle. Press M to flip it from the keyboard too. -->
